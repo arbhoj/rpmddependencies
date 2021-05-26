@@ -1,0 +1,36 @@
+  - name: configure hosts for AirGap
+    hosts: all
+    become: yes
+    tasks:
+    - name: push CA certificate to hosts
+      copy:
+        src: certs/AirGapCA.crt
+        dest: /etc/pki/ca-trust/source/anchors/AirGapCA.crt
+    
+    - name: update the CA trust
+      command: 
+        cmd: update-ca-trust
+
+    - name: push public key for to hosts
+      copy:
+        src: certs/centos8
+        dest: /tmp/centos8
+    
+    - name: update the CA trust
+      command: 
+        cmd: rpm --import /tmp/centos8
+
+    - name: install dependencies
+      yum:
+        state: present
+        name: 
+        - python3
+        - iproute-tc-5.9.0-4.el8.x86_64
+
+    - name: set alias
+      command: 
+        cmd: /usr/sbin/alternatives --set python /usr/bin/python3
+
+    - name: set alias
+      command: 
+        cmd: subscription-manager config --rhsm.manage_repos=0
